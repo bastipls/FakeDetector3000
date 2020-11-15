@@ -21,6 +21,15 @@ from rest_framework.views import APIView
 
 from .serializer import NoticiaSerializer
 
+from pathlib import Path
+import os
+
+
+# Directorio de mis mdoelos
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+MODELOS_DIR  = os.path.join(BASE_DIR,'modelos/')
+
+
 def limpiar_stopwrods(dataframe):
     stop = set(stopwords.words('english'))
     punctuation = list(string.punctuation)
@@ -33,6 +42,7 @@ def limpiar_stopwrods(dataframe):
         if i.strip().lower() not in stop:
             texto_limpio.append(i.strip())
     return " ".join(texto_limpio)
+
 # Metodo para limpiar noticias
 def verificar_texto_limpio(texto1,texto2):
 
@@ -63,8 +73,10 @@ def verificar_texto_limpio(texto1,texto2):
 def predecir(noticia):
     nombre_archivo_modelo = 'randomforestIngles.sav'
     nombre_archivo_transform = 'stringtomatrizIngles.sav'
-    loaded_model = pickle.load(open('./modelos/'+nombre_archivo_modelo, 'rb'))
-    load_model_matriz = pickle.load(open('./modelos/'+nombre_archivo_transform, 'rb'))
+
+    
+    loaded_model = pickle.load(open(MODELOS_DIR+nombre_archivo_modelo, 'rb'))
+    load_model_matriz = pickle.load(open(MODELOS_DIR+nombre_archivo_transform, 'rb'))
     # Valido si el string que llega es solo de nuemros 
     if noticia.isnumeric():
         return {'cuerpo': False}
@@ -86,7 +98,7 @@ def predecir(noticia):
 
     return json
 
-
+# Get aun no terminado
 class prediccion(APIView):
     # def get(self,request):
     #     nombre_archivo_modelo = 'randomforestIngles.sav'
