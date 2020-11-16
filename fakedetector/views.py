@@ -21,7 +21,9 @@ from rest_framework.views import APIView
 
 from .serializer import NoticiaSerializer
 
-
+from bs4 import BeautifulSoup
+from urllib.request import Request, urlopen
+import re
 import os
 
 
@@ -51,34 +53,22 @@ def limpiar_stopwrods(noticia):
         if i.strip().lower() not in stop:
             texto_limpio.append(i.strip())
     return " ".join(texto_limpio)
+def search(noticiaUrl):
 
-# Metodo para limpiar noticias
-def verificar_texto_limpio(texto1,texto2):
-    
-    stop = set(stopwords.words('english'))
-    punctuation = list(string.punctuation)
-    stop.update(punctuation)
-
-    count1 = 0
-    stw = list(stop)
-    print('Texto con stopwords')
-    for i in stw:
-        if i in list(texto1.split(" ")):
-            print(i)
-            count1+=1
-    print('Stop words encontradas sin limpiar ',count1)
-    #Texto sin stopwords
-    print('Texto sin stopwords')
-    count2=0
-    for i in stw:
-        if i in list(texto2.split(" ")):
-            print(i)
-            count2+=1
-    print('Stop words encontradas limpio: ',count2)
-
-
-
-
+    web = noticiaUrl
+    req = Request(web, headers={'User-Agent': 'Mozilla/5.0'})
+    # datos = urllib.request.urlopen(web).read().decode()
+    datos = urlopen(req).read()
+    soup =  BeautifulSoup(datos,'html.parser')
+    #tags = soup('p')
+    tags = soup.find_all("p")
+    #title = soup.find('title')
+    title = soup.find("meta",  property="og:title")
+    if title:
+        texto = title["content"] +' '+ ''.join(str(tag.text) for tag in tags)
+    else:
+        texto = ''.join(str(tag.text) for tag in tags)
+    return texto
 def predecir(noticia):
     idioma = detect(noticia)
     print(type(idioma))
@@ -93,9 +83,10 @@ def predecir(noticia):
 
     loaded_model = pickle.load(open(MODELOS_DIR+nombre_archivo_modelo, 'rb'))
     load_model_matriz = pickle.load(open(MODELOS_DIR+nombre_archivo_transform, 'rb'))
-    # Valido si el string que llega es solo de nuemros 
+    # Valido si el string que llega es solo de nuemros
     if noticia.isnumeric():
         return {'cuerpo': False}
+        
     # Limpio mi texto de stopwords
     noticia = limpiar_stopwrods(noticia)
     # Paso mi  notica a una serie de pandas
@@ -105,7 +96,7 @@ def predecir(noticia):
     # Hago la prediccion de mi noticia
     resultado = loaded_model.predict(a_predecir)
     # Detectar el idioma de la noticia
-   
+    
 
         
     # Transformo a string mi noticia
@@ -113,6 +104,17 @@ def predecir(noticia):
     json = {'prediccion':prediccion,'idioma':idioma,'cuerpo':noticia}
 
     return json
+
+def validar_url(url):
+    regex = re.compile(
+        r'^(?:http|ftp)s?://' # http:// or https://
+        r'(?:(?:[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?\.)+(?:[A-Z]{2,6}\.?|[A-Z0-9-]{2,}\.?)|' #domain...
+        r'localhost|' #localhost...
+        r'\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})' # ...or ip
+        r'(?::\d+)?' # optional port
+        r'(?:/?|[/?]\S+)$', re.IGNORECASE)
+    resutlado = re.match(regex, url) is not None
+    return resutlado
 
 # Get aun no terminado
 class prediccion(APIView):
@@ -149,8 +151,14 @@ class prediccion(APIView):
             return Response(validar_campos.errors,status=status.HTTP_400_BAD_REQUEST)
         elif  type(request.data['cuerpo'])  != str: 
             return Response({'Error':'El campo [cuerpo] debe ser str'},status=status.HTTP_400_BAD_REQUEST)  
-
-        json = predecir(request.data['cuerpo'])
+        noticia = request.data['cuerpo']
+        if(validar_url(noticia)):
+            noticia = search(noticia)
+        else:
+            noticia = request.data['cuerpo']
+        
+        
+        json = predecir(noticia)
         my_serializer = NoticiaSerializer(data=json)
         my_serializer.is_valid(True)
         return Response(my_serializer.data) 
