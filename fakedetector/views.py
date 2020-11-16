@@ -3,9 +3,9 @@ from django.http import HttpResponse
 # ML
 import pickle
 import pandas as pd
-from nltk.corpus import stopwords
 import string
 
+from nltk.corpus import stopwords
 
 from langdetect import detect
 from django.http import JsonResponse
@@ -21,7 +21,7 @@ from rest_framework.views import APIView
 
 from .serializer import NoticiaSerializer
 
-from pathlib import Path
+
 import os
 
 
@@ -30,13 +30,22 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 MODELOS_DIR  = os.path.join(BASE_DIR,'modelos/')
 
 
-def limpiar_stopwrods(dataframe):
-    stop = set(stopwords.words('english'))
+def limpiar_stopwrods(noticia):
+    idioma = detect(noticia)
+    if(idioma == 'en'):
+        print('USANDO STOPWRODS INGLES')
+        stop = set(stopwords.words('english'))
+    elif (idioma == 'es'): 
+        print('USANDO STOPWRODS SPANISH')
+        stop = set(stopwords.words('spanish'))
+    else:
+        stop = set(stopwords.words('english'))
+  
     punctuation = list(string.punctuation)
     stop.update(punctuation)
 
     texto_limpio = []
-    for i in dataframe.split():
+    for i in noticia.split():
         # Si la cadena de texto no esta en la stopwords(stop)
         #Entonces mando la cadena de texto sin las stopwords          
         if i.strip().lower() not in stop:
@@ -45,7 +54,7 @@ def limpiar_stopwrods(dataframe):
 
 # Metodo para limpiar noticias
 def verificar_texto_limpio(texto1,texto2):
-
+    
     stop = set(stopwords.words('english'))
     punctuation = list(string.punctuation)
     stop.update(punctuation)
@@ -71,10 +80,17 @@ def verificar_texto_limpio(texto1,texto2):
 
 
 def predecir(noticia):
-    nombre_archivo_modelo = 'randomforestIngles.sav'
-    nombre_archivo_transform = 'stringtomatrizIngles.sav'
+    idioma = detect(noticia)
+    print(type(idioma))
+    if(idioma == 'en'):
+        print('USANDO MODELO INGLES')
+        nombre_archivo_modelo = 'randomforestIngles.sav'
+        nombre_archivo_transform = 'stringtomatrizIngles.sav'
+    elif (idioma == 'es'): 
+        print('USANDO MODELO ESPAÑOL')
+        nombre_archivo_modelo = 'randomforestEspanol.sav'
+        nombre_archivo_transform = 'stringtomatrizEspanol.sav'
 
-    
     loaded_model = pickle.load(open(MODELOS_DIR+nombre_archivo_modelo, 'rb'))
     load_model_matriz = pickle.load(open(MODELOS_DIR+nombre_archivo_transform, 'rb'))
     # Valido si el string que llega es solo de nuemros 
@@ -89,7 +105,7 @@ def predecir(noticia):
     # Hago la prediccion de mi noticia
     resultado = loaded_model.predict(a_predecir)
     # Detectar el idioma de la noticia
-    idioma = detect(noticia)
+   
 
         
     # Transformo a string mi noticia
