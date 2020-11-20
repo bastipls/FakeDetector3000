@@ -1,4 +1,4 @@
-# Api FakeDetector3000 :tw-1f4f0:
+# Api FakeDetector3000:
 
 Nuestra aplicación orientada, pero no limitada a smartphone, está dirigida a todo tipo de usuario que desee verificar la veracidad de una noticia, es sencilla e intuitiva de usar por lo cual la edad no será una dificultad a la hora de utilizar nuestra aplicación.
 
@@ -7,7 +7,7 @@ Es capaz de analizar el link de una noticia ya sea en español o inglés, con un
 Como equipo somos conscientes del efecto de las noticias falsas, por lo que nos sentimos comprometidos en realizar un cambio por el bien de las personas, nuestra aplicación es capaz de identificar noticias falsas en cuestión de segundos, logrando así interrumpir el flujo de fake news y el caos que generan dentro de la sociedad. Por otro lado, buscamos que mediante nuestra aplicación los usuarios obtengan un “Feedback” positivo, educandose y comprendiendo de mejor manera el mundo digital y la gravedad que conlleva el compartir fake news.
 
 
-### Mas informacion :tw-2b07:
+### Mas informacion:
 
 Para probar nuestro prototipo [Link](https://fakedetector3000.tools/ "Link")
 
