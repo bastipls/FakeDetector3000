@@ -9,5 +9,5 @@ Como equipo somos conscientes del efecto de las noticias falsas, por lo que nos 
 
 ### Mas informacion:
 
-Para probar nuestro prototipo [Link](https://fakedetector3000.tools/ "Link")
+[Link](https://www.youtube.com/watch?v=wpHPFwGCqbA "Link")
 
